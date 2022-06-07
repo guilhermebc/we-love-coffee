@@ -1,15 +1,18 @@
 import { Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
+import { ConfigService, ConfigType } from '@nestjs/config';
 import { REQUEST } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Request } from 'express';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { Event } from 'src/events/entities/event.entity';
 import { Connection, Repository } from 'typeorm';
+import coffeesConfig from '../config/coffees.config';
 import { CreateCoffeeDto } from '../dto/create-coffee.dto';
 import { UpdateCoffeeDto } from '../dto/update-coffee.dto';
 import { Coffee } from '../entities/coffees.entity';
 import { Flavor } from '../entities/flavor.entity';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable() // { scope: Scope.DEFAULT }
 export class CoffeesService {
   constructor(
     @InjectRepository(Coffee)
@@ -18,7 +21,12 @@ export class CoffeesService {
     private readonly flavorRepository: Repository<Flavor>,
     private readonly connection: Connection,
     @Inject(REQUEST) private request: Request,
-  ) {}
+    @Inject(coffeesConfig.KEY)
+    private coffeesConfiguration: ConfigType<typeof coffeesConfig>,
+  ) {
+    const databaseHost = this.coffeesConfiguration.foo;
+    console.log(databaseHost);
+  }
 
   findAll(paginationQuery: PaginationQueryDto): Promise<Coffee[]> {
     const { limit, offset } = paginationQuery;
